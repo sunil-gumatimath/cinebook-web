@@ -2,6 +2,8 @@
 
 React 19 + TypeScript frontend for the **Movie Ticket Booking System** Spring Boot API.
 
+> **Backend (Spring Boot 3 API):** [`sunil-gumatimath/movie-ticket-booking-system`](https://github.com/sunil-gumatimath/movie-ticket-booking-system) — Java 17, MySQL, JWT, Swagger UI (/v3/api-docs).
+
 ## Stack
 
 | Concern | Choice |
@@ -18,6 +20,13 @@ React 19 + TypeScript frontend for the **Movie Ticket Booking System** Spring Bo
 | Icons | Lucide React |
 | Lint / typecheck | oxlint + `tsc -b` |
 
+## Related repositories
+
+| Repo | Role | Link |
+|------|------|------|
+| `movie-ticket-booking-system` | Spring Boot 3 REST API (Java 17, MySQL, JWT, Swagger) | https://github.com/sunil-gumatimath/movie-ticket-booking-system |
+| `cinebook-web` (this) | React 19 + TypeScript SPA (Vite, Tailwind, shadcn/ui) | https://github.com/sunil-gumatimath/cinebook-web |
+
 ## Getting started
 
 ```bash
@@ -26,8 +35,9 @@ npm run dev      # http://localhost:5173
 ```
 
 The dev server proxies `/api/*` to `http://localhost:8080` (see `vite.config.ts`), so start the
-Spring Boot backend before logging in. Override with `VITE_API_BASE_URL` in `.env.local` if your
-backend runs elsewhere.
+Spring Boot backend before logging in. Clone + run the API from
+[`movie-ticket-booking-system`](https://github.com/sunil-gumatimath/movie-ticket-booking-system)
+first. Override with `VITE_API_BASE_URL` in `.env.local` if your backend runs elsewhere.
 
 ```bash
 npm run build    # typecheck (tsc -b) + production build
