@@ -42,19 +42,14 @@ export interface RegisterRequest {
   dateOfBirth: string
 }
 
+export type LoginResponse = string
+
 export interface LoginRequest {
   email: string
   password: string
 }
 
-export interface LoginResponse {
-  token: string
-  userId: string
-  email: string
-  username: string
-  role: Role
-  expiresAt?: string
-}
+// (Removed; backend /login returns a raw JWT string wrapped in ResponseStructure<String>.)
 
 export interface UpdateUserRequest {
   username?: string

@@ -8,6 +8,28 @@ interface StoredAuth {
   role: string
 }
 
+export interface JwtClaims {
+  userId?: string
+  role?: string
+  sub?: string
+  email?: string
+  exp?: number
+  iat?: number
+}
+
+/** Best-effort decoding of the JWT payload (no signature check — used only for UI state). */
+export function decodeJwtClaims(token: string): JwtClaims {
+  const segments = token.split('.')
+  const payload = segments[1]
+  if (segments.length < 2 || payload === undefined) return {}
+  const normalized = payload.replace(/-/g, '+').replace(/_/g, '/') + '==='.slice(0, (4 - (payload.length % 4)) % 4)
+  try {
+    return JSON.parse(atob(normalized)) as JwtClaims
+  } catch {
+    return {}
+  }
+}
+
 /** Read the persisted auth session, if any. */
 export function readStoredAuth(): StoredAuth | null {
   const raw = localStorage.getItem(TOKEN_STORAGE_KEY)

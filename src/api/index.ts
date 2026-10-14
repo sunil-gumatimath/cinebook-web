@@ -6,4 +6,4 @@ export { moviesApi } from './movies.api'
 export { theatersApi } from './theaters.api'
 export { feedbackApi } from './feedback.api'
 
-export { clearStoredAuth, readStoredAuth, writeStoredAuth } from './token.storage'
+export { clearStoredAuth, decodeJwtClaims, readStoredAuth, writeStoredAuth } from './token.storage'
