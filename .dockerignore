@@ -1,0 +1,18 @@
+# Dependencies and build output are rebuilt inside the image.
+node_modules
+dist
+dist-ssr
+
+# Git / IDE
+.git/
+.gitignore
+.idea/
+.vscode/
+*.local
+
+# Docker and docs (not needed to build the app)
+Dockerfile
+.dockerignore
+docker-compose*.yml
+nginx.conf.template
+README.md

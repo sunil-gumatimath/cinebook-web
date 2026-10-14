@@ -29,6 +29,20 @@ React 19 + TypeScript frontend for the **Movie Ticket Booking System** Spring Bo
 
 ## Getting started
 
+### Option A — run the whole stack with Docker
+
+From the parent directory that contains both repos:
+
+```bash
+cp .env.example .env    # then set JWT_SECRET (see ../DOCKER.md)
+docker compose up --build
+```
+
+Serves the production build through nginx on http://localhost:5173, proxying `/api` to the
+backend container.
+
+### Option B — local development
+
 ```bash
 npm install
 npm run dev      # http://localhost:5173
@@ -43,6 +57,24 @@ first. Override with `VITE_API_BASE_URL` in `.env.local` if your backend runs el
 npm run build    # typecheck (tsc -b) + production build
 npm run preview  # serve the production build
 npm run lint     # oxlint
+```
+
+## Docker
+
+`Dockerfile` is a multi-stage build: `node:24-alpine` runs `npm ci` and `vite build`, then the
+output is copied into `nginx:1.27-alpine`. nginx serves the SPA with a history-API fallback (required
+by React Router's `BrowserRouter`) and proxies `/api`, `/swagger-ui` and `/v3/api-docs` to the
+backend, so the browser stays on a single origin.
+
+| File | Purpose |
+|---|---|
+| `Dockerfile` | Multi-stage build; `VITE_API_BASE_URL` is a build arg |
+| `nginx.conf.template` | SPA fallback, `/api` rewrite, asset caching, gzip |
+| `.dockerignore` | Keeps host `node_modules` and `dist` out of the build context |
+
+```bash
+docker build -t cinebook-web .
+docker run -p 5173:80 -e API_HOST=host.docker.internal -e API_PORT=8080 cinebook-web
 ```
 
 ## Project structure
