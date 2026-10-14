@@ -44,14 +44,24 @@ server {
 
     # ---------- Static assets ----------
     # Vite emits content-hashed filenames, so these are safe to cache forever.
+    #
+    # nginx's add_header does not merge across levels: a location that declares
+    # its own add_header discards everything inherited from the server block.
+    # The security headers are therefore repeated in each location that sets one.
     location /assets/ {
         expires 1y;
         add_header Cache-Control "public, immutable";
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header X-Frame-Options        "SAMEORIGIN" always;
+        add_header Referrer-Policy        "strict-origin-when-cross-origin" always;
         try_files $uri =404;
     }
 
     location = /index.html {
         add_header Cache-Control "no-cache";
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header X-Frame-Options        "SAMEORIGIN" always;
+        add_header Referrer-Policy        "strict-origin-when-cross-origin" always;
     }
 
     # ---------- SPA fallback ----------
