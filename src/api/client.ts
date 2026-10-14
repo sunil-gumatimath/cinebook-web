@@ -105,6 +105,12 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
     }
   }
 
+  // Backend wraps every response in { status, message, data }. Unwrap it so the
+  // client talks in terms of the contained DTO (or primitive, e.g. the JWT).
+  if (parsed && typeof parsed === 'object' && 'data' in parsed && Object.keys(parsed as object).includes('status')) {
+    parsed = (parsed as { data: unknown }).data
+  }
+
   if (!response.ok) {
     // An expired/invalid token should log the user out immediately.
     if (response.status === 401) clearStoredAuth()
