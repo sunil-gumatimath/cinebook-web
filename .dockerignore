@@ -14,5 +14,4 @@ dist-ssr
 Dockerfile
 .dockerignore
 docker-compose*.yml
-nginx.conf.template
 README.md
