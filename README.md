@@ -4,10 +4,6 @@ React 19 + TypeScript frontend for the **Movie Ticket Booking System** Spring Bo
 
 > **Backend (Spring Boot 3 API):** [`sunil-gumatimath/movie-ticket-booking-system`](https://github.com/sunil-gumatimath/movie-ticket-booking-system) — Java 17, MySQL, JWT, Swagger UI (/v3/api-docs).
 
-> **Workspace:** this repository is the frontend half of the CineBook monorepo. The
-> [root README](../README.md) covers the full Docker stack (MySQL + API + SPA), environment
-> variables, and service URLs.
-
 ## Stack
 
 | Concern | Choice |
@@ -36,7 +32,7 @@ React 19 + TypeScript frontend for the **Movie Ticket Booking System** Spring Bo
 
 ### Option A — run the whole stack with Docker
 
-From the parent directory that contains both repos (see the [root README](../README.md)):
+From the parent directory that contains both repos:
 
 ```bash
 cp .env.example .env    # then set JWT_SECRET
