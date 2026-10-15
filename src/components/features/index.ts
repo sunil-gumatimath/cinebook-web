@@ -1,5 +1,6 @@
 export { CopyIdButton } from './CopyIdButton'
 export { EmptyState } from './EmptyState'
+export { FormAlert } from './FormAlert'
 export { IdLookup } from './IdLookup'
 export { MovieCard } from './MovieCard'
 export { PageHeader } from './PageHeader'

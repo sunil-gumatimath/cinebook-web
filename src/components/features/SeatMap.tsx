@@ -9,7 +9,6 @@ import { cn } from '@/lib/utils'
 import type { ScreenType, SeatResponse } from '@/types/api'
 
 interface SeatMapProps {
-  screenId: string
   screenType: ScreenType
   capacity: number
   noOfRows: number
@@ -186,8 +185,7 @@ export function SeatMap({
       >
         <div className="inline-block min-w-full text-center">
           <div className="flex flex-col items-center gap-2" role="group" aria-label="Auditorium seats">
-            {sortedRows.map((rowLetter, rowIndex) => {
-              const seatsInRow = rowMap[rowLetter] || []
+            {sortedRows.map((rowLetter, rowIndex) => {              const seatsInRow = rowMap[rowLetter] || []
               return (
                 <div key={rowLetter} className="flex items-center gap-2 sm:gap-3">
                   {/* Left row label */}
@@ -240,6 +238,12 @@ export function SeatMap({
               )
             })}
           </div>
+
+          {sortedRows.length === 0 && (
+            <p className="py-10 text-sm text-muted-foreground">
+              No seat layout is available for this screen yet.
+            </p>
+          )}
         </div>
       </div>
 

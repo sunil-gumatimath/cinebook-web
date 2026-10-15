@@ -9,7 +9,6 @@ interface EmptyStateProps {
   icon?: LucideIcon
   title: string
   description: string
-  backendGap?: string
   action?: React.ReactNode
   className?: string
 }
@@ -18,7 +17,6 @@ export function EmptyState({
   icon: Icon = Info,
   title,
   description,
-  backendGap: _backendGap,
   action,
   className,
 }: EmptyStateProps) {
@@ -33,8 +31,6 @@ export function EmptyState({
           <h3 className="text-lg font-semibold tracking-tight text-foreground">{title}</h3>
           <p className="text-sm text-muted-foreground leading-relaxed">{description}</p>
         </div>
-
-        {/* Note: backendGap prop is retained for developer documentation/code comments but omitted from user-visible UI */}
 
         {action && <div className="pt-2">{action}</div>}
       </CardContent>

@@ -22,9 +22,21 @@ interface MovieCardProps {
     description?: string
   }
   className?: string
+  /** When false, the card renders as a non-clickable preview (no links, no copy button). */
+  interactive?: boolean
 }
 
-export function MovieCard({ movie, className }: MovieCardProps) {
+export function MovieCard({ movie, className, interactive = true }: MovieCardProps) {
+  const poster = (
+    <PosterPlaceholder
+      title={movie.title || 'Untitled'}
+      movieId={movie.movieId}
+      genre={movie.genre}
+      certificate={movie.certificate}
+      aspectRatio="poster"
+    />
+  )
+
   return (
     <Card
       className={cn(
@@ -32,30 +44,34 @@ export function MovieCard({ movie, className }: MovieCardProps) {
         className,
       )}
     >
-      <Link
-        to={`/movies/${movie.movieId}`}
-        className="block focus:outline-hidden"
-        tabIndex={-1}
-        aria-hidden="true"
-      >
-        <PosterPlaceholder
-          title={movie.title || 'Untitled'}
-          movieId={movie.movieId}
-          genre={movie.genre}
-          certificate={movie.certificate}
-          aspectRatio="poster"
-        />
-      </Link>
+      {interactive ? (
+        <Link
+          to={`/movies/${movie.movieId}`}
+          className="block focus:outline-hidden"
+          tabIndex={-1}
+          aria-hidden="true"
+        >
+          {poster}
+        </Link>
+      ) : (
+        <div aria-hidden="true">{poster}</div>
+      )}
 
       <div className="flex flex-1 flex-col p-4 space-y-3">
         <div className="space-y-1">
           <div className="flex items-start justify-between gap-2">
-            <Link
-              to={`/movies/${movie.movieId}`}
-              className="font-semibold text-base leading-snug line-clamp-1 hover:text-primary transition-colors focus-visible:outline-hidden focus-visible:underline"
-            >
-              {movie.title || 'Untitled'}
-            </Link>
+            {interactive ? (
+              <Link
+                to={`/movies/${movie.movieId}`}
+                className="font-semibold text-base leading-snug line-clamp-1 hover:text-primary transition-colors focus-visible:outline-hidden focus-visible:underline"
+              >
+                {movie.title || 'Untitled'}
+              </Link>
+            ) : (
+              <span className="font-semibold text-base leading-snug line-clamp-1">
+                {movie.title || 'Untitled'}
+              </span>
+            )}
           </div>
 
           <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
@@ -75,7 +91,9 @@ export function MovieCard({ movie, className }: MovieCardProps) {
 
         <div className="mt-auto pt-2 flex items-center justify-between gap-2 border-t border-border/40 text-xs">
           <RatingStars value={movie.ratings ?? 0} size="sm" showText />
-          <CopyIdButton id={movie.movieId} label="Movie ID" size="xs" variant="ghost" />
+          {interactive && (
+            <CopyIdButton id={movie.movieId} label="Movie ID" size="xs" variant="ghost" />
+          )}
         </div>
       </div>
     </Card>

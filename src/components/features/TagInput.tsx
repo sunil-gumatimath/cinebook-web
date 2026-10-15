@@ -37,7 +37,10 @@ export function TagInput({
   }, [inputValue, value])
 
   const handleAdd = useCallback(() => {
-    const trimmed = inputValueRef.current.trim()
+    // Prefer the live DOM value so a value typed but not yet flushed to state
+    // (e.g. submitting the form immediately after typing) is still captured.
+    const raw = inputRef.current?.value ?? inputValueRef.current
+    const trimmed = raw.trim()
     if (!trimmed) return
 
     // De-duplicate case-insensitively while preserving original case
@@ -73,10 +76,11 @@ export function TagInput({
   }
 
   return (
-    <div className={cn('space-y-2', className)} id={id}>
+    <div className={cn('space-y-2', className)}>
       <div className="flex items-center gap-2">
         <Input
           ref={inputRef}
+          id={id}
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           onKeyDown={handleKeyDown}

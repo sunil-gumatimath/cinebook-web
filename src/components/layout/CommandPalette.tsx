@@ -36,7 +36,9 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
   const navigate = useNavigate()
   const role = useAuthStore((s) => s.role)
   const token = useAuthStore((s) => s.token)
-  const { movies, theaters, screens } = useRecentStore()
+  const movies = useRecentStore((s) => s.movies)
+  const theaters = useRecentStore((s) => s.theaters)
+  const screens = useRecentStore((s) => s.screens)
   const [search, setSearch] = useState('')
 
   const handleOpenChange = useCallback(

@@ -43,6 +43,7 @@ import { formatRole } from '@/types/api'
 import { cn } from '@/lib/utils'
 
 import { CommandPalette } from './CommandPalette'
+import { ErrorBoundary } from './ErrorBoundary'
 import { PageSkeleton } from './PageSkeleton'
 import { ThemeToggle } from './ThemeToggle'
 
@@ -53,6 +54,9 @@ export function AppLayout() {
   const location = useLocation()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false)
+
+  // Full current URL, used to bounce the user back here after signing in.
+  const signInFrom = `${location.pathname}${location.search}${location.hash}`
 
   const username = useAuthStore((s) => s.username)
   const role = useAuthStore((s) => s.role)
@@ -89,12 +93,15 @@ export function AppLayout() {
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground antialiased selection:bg-primary/20 selection:text-primary">
-      {/* Global Network Down Banner */}
-      {isServerDown && (
-        <div
-          role="alert"
-          className="sticky top-0 z-50 flex items-center justify-between gap-3 bg-destructive px-4 py-2.5 text-xs font-medium text-destructive-foreground shadow-md sm:px-6"
-        >
+      {/* Sticky top region: the network banner stacks directly above the header
+          inside one sticky container, so the two never overlap when scrolled. */}
+      <div className="sticky top-0 z-40">
+        {/* Global Network Down Banner */}
+        {isServerDown && (
+          <div
+            role="alert"
+            className="flex items-center justify-between gap-3 bg-destructive px-4 py-2.5 text-xs font-medium text-destructive-foreground shadow-md sm:px-6"
+          >
           <div className="flex items-center gap-2">
             <AlertTriangle className="size-4 shrink-0" aria-hidden="true" />
             <span>Can't reach the server. Check your connection and try again.</span>
@@ -112,10 +119,10 @@ export function AppLayout() {
             Retry
           </Button>
         </div>
-      )}
+        )}
 
-      {/* Main Sticky Header */}
-      <header className="sticky top-0 z-40 w-full border-b border-border/80 bg-background/85 backdrop-blur-md transition-colors">
+        {/* Main Header */}
+        <header className="w-full border-b border-border/80 bg-background/85 backdrop-blur-md transition-colors">
         <nav
           className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8"
           aria-label="Main Navigation"
@@ -258,7 +265,7 @@ export function AppLayout() {
             ) : (
               <div className="flex items-center gap-2">
                 <Button variant="ghost" size="sm" asChild className="hidden sm:inline-flex text-xs">
-                  <Link to="/login" state={{ from: location.pathname }}>
+                  <Link to="/login" state={{ from: signInFrom }}>
                     Sign in
                   </Link>
                 </Button>
@@ -365,7 +372,7 @@ export function AppLayout() {
                         className="w-full text-sm"
                         onClick={() => setMobileOpen(false)}
                       >
-                        <Link to="/login" state={{ from: location.pathname }}>
+                        <Link to="/login" state={{ from: signInFrom }}>
                           Sign in
                         </Link>
                       </Button>
@@ -383,13 +390,16 @@ export function AppLayout() {
             </Sheet>
           </div>
         </nav>
-      </header>
+        </header>
+      </div>
 
       {/* Main Content Area */}
       <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6 lg:px-8">
-        <Suspense fallback={<PageSkeleton />}>
-          <Outlet />
-        </Suspense>
+        <ErrorBoundary key={location.pathname}>
+          <Suspense fallback={<PageSkeleton />}>
+            <Outlet />
+          </Suspense>
+        </ErrorBoundary>
       </main>
 
       {/* Command Palette Modal */}
@@ -423,9 +433,18 @@ export function AppLayout() {
                     </Link>
                   </li>
                   <li>
-                    <Link to="/#features" className="hover:text-foreground transition-colors">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (location.pathname !== '/') navigate('/')
+                        window.requestAnimationFrame(() => {
+                          document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })
+                        })
+                      }}
+                      className="hover:text-foreground transition-colors text-left"
+                    >
                       Features
-                    </Link>
+                    </button>
                   </li>
                 </ul>
               </div>
