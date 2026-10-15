@@ -8,7 +8,6 @@ export { feedbackApi } from './feedback.api'
 
 export {
   cacheUsername,
-  clearCachedUsernames,
   clearStoredAuth,
   decodeJwtClaims,
   getCachedUsername,

@@ -3,7 +3,7 @@ import { toast } from 'sonner'
 
 import { authApi, decodeJwtClaims, getCachedUsername } from '@/api'
 import { useAuthStore } from '@/store/auth.store'
-import type { LoginRequest, UserRole } from '@/types/api'
+import type { LoginRequest } from '@/types/api'
 import { normalizeRole } from '@/types/api'
 
 export function useLogin() {
@@ -12,10 +12,18 @@ export function useLogin() {
   return useMutation({
     mutationFn: (body: LoginRequest) => authApi.login(body),
     onSuccess: (token) => {
+      // A bare (non-JSON) token body would previously arrive as `null` and crash
+      // the claim decoder — fail loudly instead.
+      if (typeof token !== 'string' || token.length === 0) {
+        toast.error('Sign in failed: the server returned an unexpected response.')
+        return
+      }
+
       const claims = decodeJwtClaims(token)
       const role = normalizeRole(claims.role) ?? 'ROLE_USER'
       const email = claims.email ?? claims.sub ?? ''
-      const userId = claims.userId ? String(claims.userId) : ''
+      const userIdClaim = claims.userId ?? claims.id ?? claims.uid
+      const userId = userIdClaim !== undefined ? String(userIdClaim) : ''
 
       // Use cached real username if user previously registered or updated profile on this device
       const cachedUsername = getCachedUsername(userId) || getCachedUsername(email)
@@ -26,7 +34,7 @@ export function useLogin() {
         userId,
         email,
         username,
-        role: role as UserRole,
+        role,
       })
       toast.success('Welcome back!')
     },

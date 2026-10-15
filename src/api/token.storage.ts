@@ -12,7 +12,10 @@ export interface StoredAuth {
 }
 
 export interface JwtClaims {
-  userId?: string
+  /** Primary user id claim; `id`/`uid` are accepted as fallbacks. */
+  userId?: string | number
+  id?: string | number
+  uid?: string | number
   role?: string
   sub?: string
   email?: string
@@ -110,26 +113,6 @@ export function writeStoredAuth(value: StoredAuth | null): void {
 export function clearStoredAuth(): void {
   try {
     getStorage()?.removeItem(TOKEN_STORAGE_KEY)
-  } catch {
-    // ignore
-  }
-}
-
-/** Removes all mtbs.username.* cache entries on logout and account deletion. */
-export function clearCachedUsernames(): void {
-  try {
-    const storage = getStorage()
-    if (!storage) return
-    const keysToRemove: string[] = []
-    for (let i = 0; i < storage.length; i++) {
-      const key = storage.key(i)
-      if (key && key.startsWith(USERNAME_CACHE_PREFIX)) {
-        keysToRemove.push(key)
-      }
-    }
-    for (const key of keysToRemove) {
-      storage.removeItem(key)
-    }
   } catch {
     // ignore
   }

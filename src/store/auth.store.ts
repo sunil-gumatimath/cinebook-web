@@ -113,13 +113,18 @@ export const useAuthStore = create<AuthState>()((set, get) => {
     },
 
     logout: (options) => {
+      // Only surface the reason when a session is actually ending; concurrent
+      // 401s from background queries each call logout() and would otherwise
+      // stack identical toasts.
+      const wasAuthenticated = get().token !== null
+
       clearExpiryTimer()
       clearStoredAuth()
       useRecentStore.getState().loadForUser(null)
       queryClient.clear()
 
       set({ token: null, userId: null, email: null, username: null, role: null })
-      if (options?.reason) {
+      if (options?.reason && wasAuthenticated) {
         toast.error(options.reason)
       }
     },

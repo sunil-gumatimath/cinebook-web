@@ -171,7 +171,10 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
     try {
       parsed = JSON.parse(rawText) as unknown
     } catch {
-      parsed = null
+      // A successful response that is not JSON (e.g. a bare JWT returned as
+      // text/plain by a Spring String handler) is surfaced as the raw string
+      // rather than null, so callers can still use it.
+      parsed = rawText
     }
   }
 
