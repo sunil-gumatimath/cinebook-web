@@ -18,7 +18,10 @@ ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 RUN npm run build
 
 # ---------- runtime stage ----------
-FROM nginx:1.27-alpine AS runtime
+# The unprivileged variant runs as a non-root user (uid 101) and serves on
+# port 8080, which is not a privileged port — so the container needs no
+# NET_BIND_SERVICE capability and is safe to run with a read-only root FS.
+FROM nginxinc/nginx-unprivileged:1.27-alpine AS runtime
 
 COPY --from=build /app/dist /usr/share/nginx/html
 
@@ -32,9 +35,9 @@ ENV API_HOST=backend \
 
 COPY nginx.conf.template /etc/nginx/templates/default.conf.template
 
-EXPOSE 80
+EXPOSE 8080
 
 HEALTHCHECK --interval=15s --timeout=5s --start-period=10s --retries=5 \
-  CMD wget -qO- http://localhost/ > /dev/null || exit 1
+  CMD wget -qO- http://localhost:8080/ > /dev/null || exit 1
 
 CMD ["nginx", "-g", "daemon off;"]

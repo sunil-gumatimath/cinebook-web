@@ -2,9 +2,35 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <!-- Applies the stored/system theme before paint to avoid a color-scheme
+         flash. Lives in /public because the CSP forbids inline scripts. -->
+    <script src="/theme-init.js"></script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>movie-ticket-booking-frontend</title>
+    <meta name="color-scheme" content="dark light" />
+    <meta name="theme-color" content="#0e0e0e" />
+
+    <title>CineBook — Cinema Discovery & Management</title>
+    <meta
+      name="description"
+      content="CineBook — discover movies, read community reviews, explore auditorium seat maps, and manage theaters and showtimes."
+    />
+    <meta name="robots" content="index, follow" />
+
+    <!-- Open Graph / social previews -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="CineBook" />
+    <meta property="og:title" content="CineBook — Cinema Discovery & Management" />
+    <meta
+      property="og:description"
+      content="Discover movies, read community reviews, explore auditorium seat maps, and manage theaters and showtimes."
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="CineBook — Cinema Discovery & Management" />
+    <meta
+      name="twitter:description"
+      content="Discover movies, read community reviews, explore auditorium seat maps, and manage theaters and showtimes."
+    />
   </head>
   <body>
     <div id="root"></div>
