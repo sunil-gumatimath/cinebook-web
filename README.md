@@ -19,6 +19,7 @@ React 19 + TypeScript frontend for the **Movie Ticket Booking System** Spring Bo
 | Forms | React Hook Form + Zod |
 | Icons | Lucide React |
 | Lint / typecheck | oxlint + `tsc -b` |
+| Tests | Vitest |
 
 ## Related repositories
 
@@ -57,6 +58,7 @@ first. Override with `VITE_API_BASE_URL` in `.env.local` if your backend runs el
 npm run build    # typecheck (tsc -b) + production build
 npm run preview  # serve the production build
 npm run lint     # oxlint
+npm test         # Vitest unit tests (stores + lib helpers)
 ```
 
 ## Docker
@@ -91,18 +93,26 @@ src/
 │   └── index.ts          # barrel export
 ├── types/
 │   └── api.ts            # TS mirrors of the Java DTOs and enums
-├── store/
-│   └── auth.store.ts     # Zustand session + role helpers
-├── hooks/                # TanStack Query hooks (one per feature)
+├── store/                # Zustand stores (persisted)
+│   ├── auth.store.ts     # session + role helpers
+│   ├── recent.store.ts   # recently created/opened entity IDs
+│   └── network.store.ts  # online/offline status
+├── hooks/                # shared hooks (e.g. the useLogin mutation)
 ├── lib/
 │   ├── config.ts         # API base URL, app name
 │   ├── query-keys.ts     # centralized query key factory
+│   ├── queryClient.ts    # QueryClient with shared defaults
+│   ├── date.ts           # date/time formatting
+│   ├── duration.ts       # ISO-8601 duration parse/format
+│   ├── labels.ts         # enum → display label maps
+│   ├── navigation.ts     # nav model for the app shell
+│   ├── title.ts          # document title helper
 │   └── utils.ts          # cn()
 ├── components/
 │   ├── ui/               # shadcn/ui components (owned code, edit freely)
-│   ├── layout/           # AppShell / nav
-│   └── features/         # feature components (movies, booking, admin)
-└── routes/               # router + role guards + pages
+│   ├── layout/           # AppLayout, CommandPalette, ThemeToggle, PageSkeleton
+│   └── features/         # feature components (movie cards, seat map, forms)
+└── routes/               # router + role guards + feature pages
 ```
 
 ## Roles and route guards
@@ -136,9 +146,13 @@ login can redirect back:
 - ✅ Typed API client covering all 17 backend endpoints
 - ✅ JWT auth store with persistence and role helpers
 - ✅ Role-based routing and guards
-- ✅ Login page (RHF + Zod) and app shell
-- ⬜ Feature screens (movies catalog, seat-selection grid, admin tables) are still stubs —
-      placeholder components live in `src/routes/PlaceholderPage.tsx`
+- ✅ Registration and login (RHF + Zod), plus an app shell with command palette and theming
+- ✅ Feature pages: movies catalog, movie detail + feedback, theater/screen detail, owner
+      dashboard (theaters, screens, shows), admin movie management, and profile
+- ✅ Unit tests for stores and `lib/` helpers (`npm test`)
+- ⬜ Ticket booking and seat reservation await backend booking endpoints
+- ⬜ Catalog/showtime/screen listing uses ID-based fallbacks where the API lacks list routes —
+      see [`docs/BACKEND_GAPS.md`](docs/BACKEND_GAPS.md) for the requested endpoints
 
 ## Optional: generate types from Swagger
 
