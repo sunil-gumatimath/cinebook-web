@@ -1,11 +1,11 @@
-import type { Role } from '@/types/api'
-import { useAuthStore } from '@/store/auth.store'
-
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
+
+import { useAuthStore } from '@/store/auth.store'
+import type { UserRole } from '@/types/api'
 
 interface RequireAuthProps {
   /** If provided, the user must hold one of these roles. */
-  roles?: Role[]
+  roles?: UserRole[]
 }
 
 /**
