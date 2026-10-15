@@ -30,6 +30,8 @@ React 19 + TypeScript frontend for the **Movie Ticket Booking System** Spring Bo
 
 ## Getting started
 
+Node.js 22+ is required (declared via `engines.node` in `package.json`).
+
 ### Option A — run the whole stack with Docker
 
 From the parent directory that contains both repos:
@@ -63,14 +65,14 @@ npm run typecheck  # tsc -b only
 
 ## Continuous integration
 
-`.github/workflows/ci.yml` runs on every push and pull request:
+`.github/workflows/ci.yml` runs on pushes to `main`/`master` and on every pull request:
 
 1. `npm ci` → `npm run lint` → `npm run typecheck` → `npm run build`
 2. Builds the runtime container image and smoke-tests that nginx serves the SPA.
 
 ## Docker
 
-`Dockerfile` is a multi-stage build: `node:24-alpine` runs `npm ci` and `vite build`, then the
+`Dockerfile` is a multi-stage build: `node:24-alpine` runs `npm ci` and `npm run build`, then the
 output is copied into `nginxinc/nginx-unprivileged:1.27-alpine`. The unprivileged image runs as a
 non-root user (uid 101) and listens on **8080**, so no privileged port or extra capability is
 needed. nginx serves the SPA with a history-API fallback (required by React Router's
