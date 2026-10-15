@@ -16,7 +16,9 @@ import {
 } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { FormAlert } from '@/components/features'
 import { useLogin } from '@/hooks'
+import { resolvePostLoginPath } from '@/lib/auth-routing'
 import { useDocumentTitle } from '@/lib/title'
 import { useAuthStore } from '@/store/auth.store'
 
@@ -51,11 +53,7 @@ export function LoginPage() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      const defaultDest =
-        currentRole === 'ROLE_THEATER_OWNER' ? '/owner' : currentRole === 'ROLE_ADMIN' ? '/admin' : '/movies'
-      navigate(requestedFrom && requestedFrom !== '/login' && requestedFrom !== '/register' ? requestedFrom : defaultDest, {
-        replace: true,
-      })
+      navigate(resolvePostLoginPath(currentRole, requestedFrom), { replace: true })
     }
   }, [isAuthenticated, currentRole, navigate, requestedFrom])
 
@@ -73,21 +71,8 @@ export function LoginPage() {
   const onSubmit = (values: LoginValues) => {
     mutate(values, {
       onSuccess: () => {
-        // Check role after login to route to appropriate landing page
-        const role = useAuthStore.getState().role
-
-        let target = '/movies'
-        if (requestedFrom && requestedFrom !== '/' && requestedFrom !== '/login' && requestedFrom !== '/register') {
-          target = requestedFrom
-        } else if (role === 'ROLE_THEATER_OWNER') {
-          target = '/owner'
-        } else if (role === 'ROLE_ADMIN') {
-          target = '/admin'
-        } else {
-          target = '/movies'
-        }
-
-        navigate(target, { replace: true })
+        // Read the role the mutation just committed, then route via the shared resolver.
+        navigate(resolvePostLoginPath(useAuthStore.getState().role, requestedFrom), { replace: true })
       },
     })
   }
@@ -109,12 +94,7 @@ export function LoginPage() {
         <form onSubmit={handleSubmit(onSubmit)} noValidate>
           <CardContent className="space-y-4">
             {error instanceof Error && error.message && (
-              <div
-                role="alert"
-                className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive"
-              >
-                {error.message}
-              </div>
+              <FormAlert className="text-sm">{error.message}</FormAlert>
             )}
 
             <div className="space-y-1.5">

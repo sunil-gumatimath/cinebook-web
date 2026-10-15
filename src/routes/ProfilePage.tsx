@@ -36,14 +36,14 @@ import {
 } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { CopyIdButton, PageHeader } from '@/components/features'
-import { getTodayLocalDateString, isPastLocalDate } from '@/lib/date'
+import { CopyIdButton, FormAlert, PageHeader } from '@/components/features'
+import { getYesterdayLocalDateString, isPastLocalDate } from '@/lib/date'
 import { useDocumentTitle } from '@/lib/title'
 import { useAuthStore } from '@/store/auth.store'
 import { purgeUserData } from '@/store/recent.store'
 import { formatRole } from '@/types/api'
 
-// BACKEND-GAP: GET /users/me for user profile prefill (see docs/BACKEND_GAPS.md)
+// BACKEND-GAP: GET /users/me for user profile prefill
 
 const profileUpdateSchema = z.object({
   username: z
@@ -218,14 +218,7 @@ export function ProfilePage() {
 
         <form onSubmit={handleSubmit(onUpdateProfile)} noValidate>
           <CardContent className="space-y-4 pt-4">
-            {updateError && (
-              <div
-                role="alert"
-                className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-xs text-destructive"
-              >
-                {updateError}
-              </div>
-            )}
+            {updateError && <FormAlert>{updateError}</FormAlert>}
 
             <div className="space-y-1.5">
               <Label htmlFor={usernameInputId}>New / Updated Username</Label>
@@ -259,7 +252,7 @@ export function ProfilePage() {
               <Input
                 id={dobInputId}
                 type="date"
-                max={getTodayLocalDateString()}
+                max={getYesterdayLocalDateString()}
                 aria-invalid={errors.dateOfBirth !== undefined}
                 {...register('dateOfBirth')}
               />
@@ -292,7 +285,16 @@ export function ProfilePage() {
           </CardDescription>
         </CardHeader>
         <CardFooter className="flex justify-end pt-2">
-          <AlertDialog>
+          <AlertDialog
+            onOpenChange={(open) => {
+              // Clear the typed confirmation whenever the dialog closes (cancel,
+              // Escape, or overlay click) so a reopened dialog can't delete in one click.
+              if (!open) {
+                setDeleteConfirmationEmail('')
+                setIsDeleting(false)
+              }
+            }}
+          >
             <AlertDialogTrigger asChild>
               <Button variant="destructive" size="sm" className="gap-2">
                 <Trash2 className="size-4" />

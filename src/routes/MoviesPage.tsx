@@ -23,13 +23,13 @@ import { useAuthStore } from '@/store/auth.store'
 import { useRecentStore } from '@/store/recent.store'
 import { CERTIFICATES, GENRES } from '@/types/api'
 
-// BACKEND-GAP: GET /movies catalog and search endpoint (see docs/BACKEND_GAPS.md)
+// BACKEND-GAP: GET /movies catalog and search endpoint
 
 export function MoviesPage() {
   useDocumentTitle('Browse Movies')
   const navigate = useNavigate()
   const role = useAuthStore((s) => s.role)
-  const { movies } = useRecentStore()
+  const movies = useRecentStore((s) => s.movies)
 
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedGenre, setSelectedGenre] = useState<string>('ALL')

@@ -19,7 +19,10 @@ export function RequireAuth({ roles }: RequireAuthProps) {
   const location = useLocation()
 
   if (!token) {
-    return <Navigate to="/login" state={{ from: location.pathname }} replace />
+    // Preserve the full attempted URL (path + query + hash) so login can return
+    // the user to exactly where they were.
+    const from = `${location.pathname}${location.search}${location.hash}`
+    return <Navigate to="/login" state={{ from }} replace />
   }
 
   if (roles && (role === null || !roles.includes(role))) {

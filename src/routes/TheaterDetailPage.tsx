@@ -27,13 +27,16 @@ import { useDocumentTitle } from '@/lib/title'
 import { useAuthStore } from '@/store/auth.store'
 import { useRecentStore } from '@/store/recent.store'
 
-// BACKEND-GAP: GET /theater/{id} does not return screens or owner (see docs/BACKEND_GAPS.md)
+// BACKEND-GAP: GET /theater/{id} does not return screens or owner
 
 export function TheaterDetailPage() {
   const { theaterId } = useParams<{ theaterId: string }>()
   const navigate = useNavigate()
-  const { role } = useAuthStore()
-  const { theaters, screens, saveTheater, removeTheater } = useRecentStore()
+  const role = useAuthStore((s) => s.role)
+  const theaters = useRecentStore((s) => s.theaters)
+  const screens = useRecentStore((s) => s.screens)
+  const saveTheater = useRecentStore((s) => s.saveTheater)
+  const removeTheater = useRecentStore((s) => s.removeTheater)
 
   const knownTheater = theaters.find((t) => t.theaterId === theaterId)
   const isOwner = role === 'ROLE_THEATER_OWNER' && knownTheater?.source === 'created'

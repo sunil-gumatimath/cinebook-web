@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import {
-  type InfiniteData,
   useInfiniteQuery,
   useMutation,
   useQuery,
@@ -31,6 +30,7 @@ import { Textarea } from '@/components/ui/textarea'
 import {
   CopyIdButton,
   EmptyState,
+  FormAlert,
   PageHeader,
   PosterPlaceholder,
   RatingStars,
@@ -41,9 +41,8 @@ import { queryKeys } from '@/lib/query-keys'
 import { useDocumentTitle } from '@/lib/title'
 import { useAuthStore } from '@/store/auth.store'
 import { useRecentStore } from '@/store/recent.store'
-import type { FeedbackResponse } from '@/types/api'
 
-// BACKEND-GAP: GET /movies/{movieId}/feedback lacks pagination metadata and reviewer display name (see docs/BACKEND_GAPS.md)
+// BACKEND-GAP: GET /movies/{movieId}/feedback lacks pagination metadata and reviewer display name
 
 const feedbackSchema = z.object({
   rating: z.number().min(1, 'Please select a star rating (1–5)').max(5),
@@ -61,7 +60,8 @@ export function MovieDetailPage() {
   const queryClient = useQueryClient()
 
   const role = useAuthStore((s) => s.role)
-  const { saveMovie, removeMovie } = useRecentStore()
+  const saveMovie = useRecentStore((s) => s.saveMovie)
+  const removeMovie = useRecentStore((s) => s.removeMovie)
 
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [feedbackError, setFeedbackError] = useState<string | null>(null)
@@ -110,7 +110,7 @@ export function MovieDetailPage() {
     hasNextPage,
     fetchNextPage,
   } = useInfiniteQuery({
-    queryKey: ['movies', movieId, 'feedback'],
+    queryKey: queryKeys.feedback(movieId || ''),
     queryFn: ({ pageParam = 0, signal }) =>
       feedbackApi.listForMovie(movieId || '', pageParam, 20, signal),
     initialPageParam: 0,
@@ -119,7 +119,8 @@ export function MovieDetailPage() {
       if (lastPage.length < 20) return undefined
       return allPages.length
     },
-    enabled: Boolean(movieId),
+    // Don't fetch reviews for a movie that failed to load (e.g. a 404).
+    enabled: Boolean(movieId) && !movieError,
   })
 
   const allFeedbacks = feedbackData ? feedbackData.pages.flat() : []
@@ -151,32 +152,18 @@ export function MovieDetailPage() {
         rating: values.rating,
         review: values.review.trim(),
       }),
-    onSuccess: (newFeedback) => {
+    onSuccess: () => {
       toast.success('Your feedback was submitted successfully!')
       reset({ rating: 0, review: '' })
       setIsFormOpen(false)
       setFeedbackError(null)
 
-      // Invalidate movie query to update average ratings
+      // Invalidate the movie (average rating) and the review list. We must
+      // refetch the list rather than prepend into page 0: prepending shifts the
+      // server's page boundaries, so a later "Load more" would fetch an item
+      // that is already rendered and duplicate it.
       queryClient.invalidateQueries({ queryKey: queryKeys.movie(movieId || '') })
-
-      // Prepend newly created feedback directly into the query cache
-      queryClient.setQueryData<InfiniteData<FeedbackResponse[]>>(
-        ['movies', movieId, 'feedback'],
-        (old) => {
-          if (!old) {
-            return {
-              pageParams: [0],
-              pages: [[newFeedback]],
-            }
-          }
-          const [firstPage = [], ...restPages] = old.pages
-          return {
-            ...old,
-            pages: [[newFeedback, ...firstPage], ...restPages],
-          }
-        },
-      )
+      queryClient.invalidateQueries({ queryKey: queryKeys.feedback(movieId || '') })
     },
     onError: (err: unknown) => {
       if (err instanceof ApiError && err.isConflict) {
@@ -310,7 +297,8 @@ export function MovieDetailPage() {
             <div className="flex items-center gap-3 pt-1">
               <RatingStars value={movie.ratings} size="lg" showText />
               <span className="text-xs text-muted-foreground">
-                ({allFeedbacks.length} {allFeedbacks.length === 1 ? 'review' : 'reviews'})
+                ({allFeedbacks.length}
+                {hasNextPage ? '+' : ''} {allFeedbacks.length === 1 ? 'review' : 'reviews'})
               </span>
             </div>
           </div>
@@ -386,15 +374,7 @@ export function MovieDetailPage() {
             </CardHeader>
             <form onSubmit={handleSubmit(onSubmitFeedback)} noValidate>
               <CardContent className="space-y-4">
-                {feedbackError && (
-                  <div
-                    role="alert"
-                    className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-xs text-destructive flex items-start gap-2"
-                  >
-                    <AlertCircle className="size-4 shrink-0 mt-0.5" />
-                    <span>{feedbackError}</span>
-                  </div>
-                )}
+                {feedbackError && <FormAlert>{feedbackError}</FormAlert>}
 
                 <div className="space-y-1.5">
                   <label className="text-xs font-medium text-muted-foreground">Your Rating</label>

@@ -18,6 +18,17 @@ export function isPastEpochMillis(epochMillis: number, nowMillis: number = Date.
 }
 
 /**
+ * Returns yesterday's date formatted as YYYY-MM-DD in the user's local timezone.
+ * Used as the `max` for date-of-birth pickers, whose validation requires a
+ * strictly past date (picking "today" would be rejected).
+ */
+export function getYesterdayLocalDateString(referenceDate: Date = new Date()): string {
+  const yesterday = new Date(referenceDate)
+  yesterday.setDate(yesterday.getDate() - 1)
+  return getTodayLocalDateString(yesterday)
+}
+
+/**
  * Checks if an ISO date string (YYYY-MM-DD) is strictly in the past
  * relative to the current local calendar date.
  */

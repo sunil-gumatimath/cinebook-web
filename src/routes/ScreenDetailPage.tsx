@@ -20,7 +20,8 @@ import { useRecentStore } from '@/store/recent.store'
 export function ScreenDetailPage() {
   const { screenId } = useParams<{ screenId: string }>()
   const role = useAuthStore((s) => s.role)
-  const { saveScreen, removeScreen } = useRecentStore()
+  const saveScreen = useRecentStore((s) => s.saveScreen)
+  const removeScreen = useRecentStore((s) => s.removeScreen)
   const existingTheaterId = useRecentStore(
     (s) => s.screens.find((sc) => sc.screenId === screenId)?.theaterId,
   )
@@ -127,7 +128,6 @@ export function ScreenDetailPage() {
       {/* Interactive Seat Map Card */}
       <div className="rounded-xl border border-border/80 bg-card p-4 sm:p-8 shadow-xs">
         <SeatMap
-          screenId={screen.screenId}
           screenType={screen.screenType}
           capacity={screen.capacity}
           noOfRows={screen.noOfRows}

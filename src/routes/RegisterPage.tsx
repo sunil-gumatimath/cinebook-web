@@ -18,7 +18,8 @@ import {
 } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { getTodayLocalDateString, isPastLocalDate } from '@/lib/date'
+import { FormAlert } from '@/components/features'
+import { getYesterdayLocalDateString, isPastLocalDate } from '@/lib/date'
 import { useDocumentTitle } from '@/lib/title'
 import { cn } from '@/lib/utils'
 import { useAuthStore } from '@/store/auth.store'
@@ -158,14 +159,7 @@ export function RegisterPage() {
 
         <form onSubmit={handleSubmit(onSubmit)} noValidate>
           <CardContent className="space-y-4">
-            {serverError && (
-              <div
-                role="alert"
-                className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive"
-              >
-                {serverError}
-              </div>
-            )}
+            {serverError && <FormAlert className="text-sm">{serverError}</FormAlert>}
 
             {/* Username */}
             <div className="space-y-1.5">
@@ -227,7 +221,7 @@ export function RegisterPage() {
               <Input
                 id={dobId}
                 type="date"
-                max={getTodayLocalDateString()}
+                max={getYesterdayLocalDateString()}
                 aria-invalid={errors.dateOfBirth !== undefined}
                 {...register('dateOfBirth')}
               />
