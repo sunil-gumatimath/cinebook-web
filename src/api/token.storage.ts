@@ -1,11 +1,14 @@
-const TOKEN_STORAGE_KEY = 'mtbs.auth'
+import type { UserRole } from '@/types/api'
 
-interface StoredAuth {
+const TOKEN_STORAGE_KEY = 'mtbs.auth'
+const USERNAME_CACHE_PREFIX = 'mtbs.username.'
+
+export interface StoredAuth {
   token: string
   userId: string
   email: string
   username: string
-  role: string
+  role: UserRole
 }
 
 export interface JwtClaims {
@@ -30,26 +33,104 @@ export function decodeJwtClaims(token: string): JwtClaims {
   }
 }
 
-/** Read the persisted auth session, if any. */
+export function isTokenExpired(token: string): boolean {
+  const claims = decodeJwtClaims(token)
+  if (!claims.exp) return false
+  // Add a 5 second clock skew margin
+  return claims.exp * 1000 <= Date.now() + 5000
+}
+
+export function getTokenRemainingMs(token: string): number {
+  const claims = decodeJwtClaims(token)
+  if (!claims.exp) return Number.POSITIVE_INFINITY
+  return Math.max(0, claims.exp * 1000 - Date.now())
+}
+
+function getStorage(): Storage | null {
+  try {
+    if (typeof localStorage !== 'undefined') {
+      return localStorage
+    }
+  } catch {
+    // ignore
+  }
+  return null
+}
+
+/** Cache username by email or userId to persist real usernames across logins. */
+export function cacheUsername(identifier: string, username: string): void {
+  if (!identifier || !username) return
+  try {
+    getStorage()?.setItem(`${USERNAME_CACHE_PREFIX}${identifier.toLowerCase()}`, username)
+  } catch {
+    // localStorage might fail in private browsing
+  }
+}
+
+export function getCachedUsername(identifier: string): string | null {
+  if (!identifier) return null
+  try {
+    return getStorage()?.getItem(`${USERNAME_CACHE_PREFIX}${identifier.toLowerCase()}`) ?? null
+  } catch {
+    return null
+  }
+}
+
+/** Read the persisted auth session, if any. Automatically drops expired sessions. */
 export function readStoredAuth(): StoredAuth | null {
-  const raw = localStorage.getItem(TOKEN_STORAGE_KEY)
+  const storage = getStorage()
+  if (!storage) return null
+  const raw = storage.getItem(TOKEN_STORAGE_KEY)
   if (!raw) return null
   try {
-    return JSON.parse(raw) as StoredAuth
+    const session = JSON.parse(raw) as StoredAuth
+    if (!session.token || isTokenExpired(session.token)) {
+      clearStoredAuth()
+      return null
+    }
+    return session
   } catch {
-    localStorage.removeItem(TOKEN_STORAGE_KEY)
+    clearStoredAuth()
     return null
   }
 }
 
 export function writeStoredAuth(value: StoredAuth | null): void {
   if (value === null) {
-    localStorage.removeItem(TOKEN_STORAGE_KEY)
+    clearStoredAuth()
     return
   }
-  localStorage.setItem(TOKEN_STORAGE_KEY, JSON.stringify(value))
+  try {
+    getStorage()?.setItem(TOKEN_STORAGE_KEY, JSON.stringify(value))
+  } catch {
+    // ignore storage quota errors
+  }
 }
 
 export function clearStoredAuth(): void {
-  localStorage.removeItem(TOKEN_STORAGE_KEY)
+  try {
+    getStorage()?.removeItem(TOKEN_STORAGE_KEY)
+  } catch {
+    // ignore
+  }
+}
+
+/** Removes all mtbs.username.* cache entries on logout and account deletion. */
+export function clearCachedUsernames(): void {
+  try {
+    const storage = getStorage()
+    if (!storage) return
+    const keysToRemove: string[] = []
+    for (let i = 0; i < storage.length; i++) {
+      const key = storage.key(i)
+      if (key && key.startsWith(USERNAME_CACHE_PREFIX)) {
+        keysToRemove.push(key)
+      }
+    }
+    for (const key of keysToRemove) {
+      storage.removeItem(key)
+    }
+  } catch {
+    // ignore
+  }
 }

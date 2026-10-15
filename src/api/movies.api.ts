@@ -1,10 +1,10 @@
-import type { CreateMovieRequest, MovieResponse } from '@/types/api'
+import type { MovieRequest, MovieResponse } from '@/types/api'
 
 import { apiClient } from './client'
 
 export const moviesApi = {
   /** POST /movies — ROLE_ADMIN only. */
-  create: (body: CreateMovieRequest) => apiClient.post<MovieResponse>('/movies', body),
+  create: (body: MovieRequest) => apiClient.post<MovieResponse>('/movies', body),
 
   /** PUT /movies/{movieId} — ROLE_ADMIN only. Updates the title. */
   updateTitle: (movieId: string, title: string) =>
@@ -18,7 +18,7 @@ export const moviesApi = {
   updateCast: (movieId: string, castList: string[]) =>
     apiClient.put<MovieResponse>(`/movies/${movieId}/cast`, { castList }),
 
-  /** GET /movies/{movieId} */
+  /** GET /movies/{movieId} — any JWT. */
   getById: (movieId: string, signal?: AbortSignal) =>
     apiClient.get<MovieResponse>(`/movies/${movieId}`, { signal }),
 }
