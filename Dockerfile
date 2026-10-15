@@ -37,7 +37,9 @@ COPY nginx.conf.template /etc/nginx/templates/default.conf.template
 
 EXPOSE 8080
 
+# 127.0.0.1, not localhost: nginx listens on IPv4 only, and `localhost`
+# resolves to IPv6 (::1) first inside the container, giving "Connection refused".
 HEALTHCHECK --interval=15s --timeout=5s --start-period=10s --retries=5 \
-  CMD wget -qO- http://localhost:8080/ > /dev/null || exit 1
+  CMD wget -qO- http://127.0.0.1:8080/ > /dev/null || exit 1
 
 CMD ["nginx", "-g", "daemon off;"]
