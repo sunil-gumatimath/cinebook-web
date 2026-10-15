@@ -34,15 +34,28 @@ Node.js 22+ is required (declared via `engines.node` in `package.json`).
 
 ### Option A — run the whole stack with Docker
 
-From the parent directory that contains both repos:
+The compose stack in the parent directory (alongside the backend repo) builds the API and this
+SPA, and serves the SPA through nginx. It connects to a MySQL server running on the host by
+default; add the `container-db` profile to start a containerised MySQL instead.
 
 ```bash
-cp .env.example .env    # then set JWT_SECRET
+cd ..
+cp .env.example .env
+# Set JWT_SECRET to a Base64 value that decodes to at least 64 bytes (HS512):
+node -e "console.log(require('crypto').randomBytes(64).toString('base64'))"
 docker compose up --build
 ```
 
-Serves the production build through nginx on http://localhost:5173, proxying `/api` to the
-backend container.
+The browser only ever talks to the frontend origin — nginx proxies `/api`, `/swagger-ui`, and
+`/v3/api-docs` to the backend container, so CORS never applies.
+
+| Service | URL |
+|---|---|
+| SPA (nginx) | http://localhost:5173 |
+| Swagger UI | http://localhost:5173/swagger-ui/index.html |
+| OpenAPI JSON | http://localhost:5173/v3/api-docs |
+| API (direct) | http://localhost:8080 |
+| MySQL (host) | localhost:3306 |
 
 ### Option B — local development
 
@@ -92,6 +105,17 @@ paint by the same-origin `public/theme-init.js` instead of an inline `<script>`.
 docker build -t cinebook-web .
 docker run -p 5173:8080 -e API_HOST=host.docker.internal -e API_PORT=8080 cinebook-web
 ```
+
+## Environment variables
+
+| Variable | Where | Default | Purpose |
+|---|---|---|---|
+| `VITE_API_BASE_URL` | build time (Vite) | `/api` | Base URL the SPA calls. The image proxies `/api` to the backend, so the default works in the container. |
+| `API_HOST` | runtime (nginx) | `backend` | Upstream host that nginx proxies `/api`, `/swagger-ui`, and `/v3/api-docs` to. |
+| `API_PORT` | runtime (nginx) | `8080` | Upstream port for the same proxy. |
+
+The root `.env` used by compose also carries the database, `JWT_*`, and `CORS_ALLOWED_ORIGINS`
+settings (documented in the backend README).
 
 ## Project structure
 
