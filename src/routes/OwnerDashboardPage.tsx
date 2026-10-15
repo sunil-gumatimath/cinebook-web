@@ -28,12 +28,12 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { CopyIdButton, EmptyState, IdLookup, PageHeader } from '@/components/features'
+import { CopyIdButton, EmptyState, FormAlert, IdLookup, PageHeader } from '@/components/features'
 import { useDocumentTitle } from '@/lib/title'
 import { useRecentStore } from '@/store/recent.store'
 import type { TheaterRequest } from '@/types/api'
 
-// BACKEND-GAP: GET /theater/mine for owner theater listing (see docs/BACKEND_GAPS.md)
+// BACKEND-GAP: GET /theater/mine for owner theater listing
 
 const theaterSchema = z.object({
   name: z.string().trim().min(1, 'Theater name cannot be blank'),
@@ -47,7 +47,8 @@ type TheaterFormValues = z.infer<typeof theaterSchema>
 export function OwnerDashboardPage() {
   useDocumentTitle('Theater Owner Dashboard')
   const navigate = useNavigate()
-  const { theaters, saveTheater } = useRecentStore()
+  const theaters = useRecentStore((s) => s.theaters)
+  const saveTheater = useRecentStore((s) => s.saveTheater)
 
   const [dialogOpen, setDialogOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -131,14 +132,7 @@ export function OwnerDashboardPage() {
               </DialogHeader>
 
               <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4 pt-2">
-                {serverError && (
-                  <div
-                    role="alert"
-                    className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-xs text-destructive"
-                  >
-                    {serverError}
-                  </div>
-                )}
+                {serverError && <FormAlert>{serverError}</FormAlert>}
 
                 <div className="space-y-1.5">
                   <Label htmlFor={nameId}>Theater Name</Label>
@@ -311,8 +305,8 @@ export function OwnerDashboardPage() {
                   Recently viewed ({theaters.filter((t) => t.source === 'opened').length})
                 </h3>
                 <p className="text-xs text-muted-foreground">
-                                  Theaters you opened by ID. If one of them is yours, open it and enable management.
-                                </p>
+                  Theaters you opened by ID. If one of them is yours, open it and enable management.
+                </p>
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
